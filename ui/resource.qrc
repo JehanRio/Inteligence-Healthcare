@@ -1,0 +1,10 @@
+<RCC>
+  <qresource prefix="images">
+    <file>static/image/1.png</file>
+    <file>static/image/shu.jpg</file>
+  </qresource>
+  <qresource prefix="icons">
+    <file>static/icon/close.svg</file>
+    <file>static/icon/back.svg</file>
+  </qresource>
+</RCC>
