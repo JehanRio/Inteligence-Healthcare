@@ -1,5 +1,7 @@
 import sys
 import logging
+
+import mysql.connector
 from PyQt5.QtWidgets import QApplication, QMainWindow
 
 from ui.interface import Controller

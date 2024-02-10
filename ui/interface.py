@@ -1,12 +1,14 @@
+import os.path
 import sys
 import logging
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
 from ui import home, query, upload
 from db.person import Person
 from core.barCode import *
+from db.mysqlConn import *
 
 # 封装各个界面
 
@@ -79,7 +81,6 @@ class uploadUi(QtWidgets.QMainWindow, upload.Ui_Form):
 
     def upload(self):
         self.showInfo()
-        logging.info("上传病人信息成功 展示图片")
 
     # 病人信息
     def showInfo(self):
@@ -89,16 +90,49 @@ class uploadUi(QtWidgets.QMainWindow, upload.Ui_Form):
         bloodType = self.bloodType.text()
         medicine = self.medicine.text()
         codeType = self.codeType.currentText()
+
         # 封装成类
         person = Person(name, gender, age, bloodType, medicine)
 
+        # 插入数据库
+        # 先检查是否有姓名重复
+        if checkRepetitive(name) == 0:
+            reply = QMessageBox.question(self, "Warning!!!", "该病人已创建，是否覆盖信息？", QMessageBox.Yes | QMessageBox.No)
+            if reply == QMessageBox.Yes:    # 覆盖信息 执行更新操作
+                # 执行更新
+                if queryMedicineandTransform(person) == -1:
+                    reply = QMessageBox.question(self, "Warning!!!", "药品不存在", QMessageBox.Yes)
+                    return
+                updateByName(person)
+                # 先删除文件
+                codePath = os.path.join("result", name + "_" + codeType + ".png")
+                try:
+                    os.remove(codePath)
+                    print(codePath)
+                except FileNotFoundError:
+                    print("文件不存在")
+                # 生成条形码
+                self.generateCode(person, codeType)
+        else:
+            if queryMedicineandTransform(person) == -1:
+                reply = QMessageBox.question(self, "Warning!!!", "药品不存在", QMessageBox.Yes)
+                return
+            # 执行插入操作
+            insert(person)
+            self.generateCode(person, codeType)
+
+    # 生成条形码
+    def generateCode(self, person, codeType):
         # 生成条形码
+        print(person.getMedicine())
         imgName = generate_barcode(person, codeType)
         jpg = QPixmap(imgName).scaled(self.code.width(),
                                       self.code.height())  # 通过文件路径获取图片文件，并设置图片长宽为label控件的长款
+
         self.code.setPixmap(jpg)  # 在label控件上显示选择的图片
 
         logging.info("病人信息：" + person.__str__() + "    " + "条形码生成：" + imgName)
+        logging.info("上传病人信息成功 展示图片")
 
 # 主要负责页面的切换，具体内部实现由具体的类实现
 class Controller:

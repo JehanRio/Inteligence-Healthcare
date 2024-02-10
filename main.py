@@ -1,57 +1,33 @@
-import barcode
-from barcode.writer import ImageWriter
+import sys
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QPushButton, QVBoxLayout, QWidget, QMessageBox
 
-from pyzbar.pyzbar import decode
-from PIL import Image
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
 
-import logging
+        self.input_box = QLineEdit(self)
+        self.button = QPushButton("点击我", self)
+        self.button.clicked.connect(self.on_button_clicked)
 
-from db.person import Person
+        layout = QVBoxLayout()
+        layout.addWidget(self.input_box)
+        layout.addWidget(self.button)
 
+        central_widget = QWidget()
+        central_widget.setLayout(layout)
+        self.setCentralWidget(central_widget)
 
-def generate_barcode(data, output_file):
-    # 选择条形码类型，这里以Code128为例
-    code128 = barcode.get_barcode_class('gs1_128')
-    # 创建条形码对象
-    barcode_obj = code128(data, writer=ImageWriter())
-    # 保存条形码到文件
-    barcode_obj.save(output_file)
+    def on_button_clicked(self):
+        text = self.input_box.text()
+        if text == "弹出弹窗":
+            reply = QMessageBox.question(self, "确认", "你确定要弹出弹窗吗？", QMessageBox.Yes | QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                print("用户点击了确认")
+            else:
+                print("用户点击了取消")
 
-def encode_demo():
-    # 示例：将01字符串编码成条形码并保存为图片
-    name = "lijiahan"
-    gender = "male"
-    age = str(22)
-    blood = "A"
-    medicine = "1,3,21"
-    data = name + " " + gender + " " + age + " " + blood + " " + medicine
-    output_file = 'barcode'
-    generate_barcode(data, output_file)
-
-
-def decode_barcode(image_path):
-    image = Image.open(image_path)
-    decoded_objects = decode(image)
-    barcode_data = ''
-    for obj in decoded_objects:
-        barcode_data += obj.data.decode('utf-8')
-    personList = barcode_data.split(" ")
-    name = personList[0]
-    gender = personList[1]
-    age = personList[2]
-    bloodType = personList[3]
-    medicine = personList[4]
-    person = Person(name, gender, age, bloodType, medicine)
-    return person
-
-def decode_demo():
-    image_path = 'barcode.png'
-    barcode_string = decode_barcode(image_path)
-    print(barcode_string)
-
-
-
-if __name__ == '__main__':
-    encode_demo()
-    decode_demo()
-    # logging.info("错误！")
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec_())
