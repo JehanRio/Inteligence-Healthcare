@@ -64,5 +64,16 @@ def queryMedicineandTransform(person:Person):
     person.setMedicine(','.join(res))
   return 1
 
+def queryindex2Medicine(medicine:str):
+  res = []
+  with mydb.cursor() as cursor:
+    list = medicine.split(',')
+    for i in list:
+      query = "select drug_name from medicine where %s = id"
+      cursor.execute(query, (i, ))
+      res.append(cursor.fetchone()[0])
+  # print(','.join(res))
+  return ','.join(res)
 if __name__ == '__main__':
-  queryMedicineandTransform("阿司匹林,布洛芬,999感冒灵颗粒")
+  # queryMedicineandTransform("阿司匹林,布洛芬,999感冒灵颗粒")
+  queryindex2Medicine("1,2,13")

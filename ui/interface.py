@@ -63,7 +63,11 @@ class queryUi(QtWidgets.QMainWindow, query.Ui_Form):
         self.gender.setText(person.getGender())
         self.age.setText(person.getAge())
         self.bloodType.setText(person.getBloodType())
-        self.medicine.setText(person.getMedicine())
+
+        # 从数据库取数据
+        medicine = queryindex2Medicine(person.getMedicine())
+        self.medicine.setText(medicine)
+        logging.info("病人信息：" + person.__str__())
 
 class uploadUi(QtWidgets.QMainWindow, upload.Ui_Form):
     switchWindow2Home = QtCore.pyqtSignal() # 返回主页面
